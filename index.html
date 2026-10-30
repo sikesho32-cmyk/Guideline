@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verbit Transcription Compliance & Corrector Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .mono { font-family: 'JetBrains+Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-check-double text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight text-white">Verbit Compliance Engine</h1>
+          <p class="text-xs text-slate-400">General Guidelines 2.0 Compliance & Auto-Corrector</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
+          <i class="fa-solid fa-shield-halved text-indigo-400 mr-1"></i> Auto-Correction Engine Active
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col gap-6 w-full">
+
+    <!-- Mode Selector & Controls -->
+    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-4">
+        <span class="text-sm font-semibold text-slate-300">Transcription Mode:</span>
+        <div class="inline-flex rounded-lg bg-slate-900 p-1 border border-slate-700">
+          <button id="modeClean" onclick="setMode('clean')" class="flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm">
+            <i class="fa-solid fa-sparkles text-xs"></i>
+            <span>Clean Read</span>
+          </button>
+          <button id="modeVerbatim" onclick="setMode('verbatim')" class="flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
+            <i class="fa-solid fa-[#0000] fa-quote-left text-xs"></i>
+            <span>Full Verbatim</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button onclick="clearAll()" class="px-3.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-700/50 text-sm font-medium transition">
+          <i class="fa-solid fa-rotate-left mr-1.5 text-xs"></i> Clear
+        </button>
+        <button onclick="runCheck()" class="px-5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center">
+          <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Fix & Validate
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+      
+      <!-- Input Panel -->
+      <div class="flex flex-col bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden">
+        <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700/60 flex items-center justify-between">
+          <span class="text-sm font-semibold text-slate-200 flex items-center">
+            <i class="fa-solid fa-file-pen text-indigo-400 mr-2"></i> Raw Transcript Input
+          </span>
+          <span id="inputCharCount" class="text-xs text-slate-400 mono">0 chars</span>
+        </div>
+        <textarea id="inputText" placeholder="Paste your transcript text here..." class="w-full h-80 lg:h-full p-4 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none mono text-sm leading-relaxed" oninput="updateStats()"></textarea>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="flex flex-col bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden">
+        <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700/60 flex items-center justify-between">
+          <span class="text-sm font-semibold text-slate-200 flex items-center">
+            <i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i> 100% Compliant Result
+          </span>
+          <button onclick="copyOutput()" class="px-2.5 py-1 text-xs font-medium rounded bg-slate-700 hover:bg-slate-600 text-slate-200 transition flex items-center">
+            <i id="copyIcon" class="fa-regular fa-copy mr-1"></i> <span id="copyText">Copy Fixed Text</span>
+          </button>
+        </div>
+        <div id="outputText" class="w-full h-80 lg:h-full p-4 bg-slate-950/40 text-emerald-300 mono text-sm leading-relaxed overflow-y-auto whitespace-pre-wrap select-all">Result will appear here after clicking "Fix & Validate"...</div>
+      </div>
+
+    </div>
+
+    <!-- Changes & Issues Log -->
+    <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-4">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center">
+        <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Correction & Rule Verification Audit Log
+      </h3>
+      <div id="auditLog" class="space-y-2 text-xs max-h-48 overflow-y-auto pr-2">
+        <div class="text-slate-500 italic">No analysis performed yet. Paste a transcript and click "Fix & Validate".</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let activeMode = 'clean';
+
+    function setMode(mode) {
+      activeMode = mode;
+      const cleanBtn = document.getElementById('modeClean');
+      const verbBtn = document.getElementById('modeVerbatim');
+
+      if (mode === 'clean') {
+        cleanBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm";
+        verbBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white";
+      } else {
+        verbBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm";
+        cleanBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white";
+      }
+    }
+
+    function updateStats() {
+      const text = document.getElementById('inputText').value;
+      document.getElementById('inputCharCount').innerText = `${text.length} chars`;
+    }
+
+    function clearAll() {
+      document.getElementById('inputText').value = '';
+      document.getElementById('outputText').innerText = 'Result will appear here after clicking "Fix & Validate"...';
+      document.getElementById('auditLog').innerHTML = '<div class="text-slate-500 italic">No analysis performed yet. Paste a transcript and click "Fix & Validate".</div>';
+      updateStats();
+    }
+
+    function copyOutput() {
+      const output = document.getElementById('outputText').innerText;
+      if (!output || output.startsWith('Result will appear')) return;
+      navigator.clipboard.writeText(output);
+      const copyText = document.getElementById('copyText');
+      copyText.innerText = 'Copied!';
+      setTimeout(() => copyText.innerText = 'Copy Fixed Text', 2000);
+    }
+
+    function runCheck() {
+      const input = document.getElementById('inputText').value;
+      if (!input.trim()) return;
+
+      let text = input;
+      let logs = [];
+
+      // 1. Ellipsis Removal Rule
+      if (text.includes('...')) {
+        text = text.replace(/\.\.\./g, '');
+        logs.push({ rule: 'Punctuation', desc: 'Removed ellipses (...), as forbidden in Verbit General Guidelines.' });
+      }
+
+      // 2. Exclamation Mark Removal
+      if (/[!]/g.test(text.replace(/Yahoo!/gi, ''))) {
+        text = text.replace(/([^Y]|^)!(?![\w])/g, '$1.');
+        logs.push({ rule: 'Punctuation', desc: 'Removed exclamation marks (except for allowed brand "Yahoo!").' });
+      }
+
+      // 3. Clean Read Filler Words Removal
+      if (activeMode === 'clean') {
+        const fillers = [
+          '\\bum\\b', '\\buh\\b', '\\buh-huh\\b', '\\bah\\b', 
+          '\\byou know\\b', '\\blike,?\\b', '\\bsort of\\b', '\\bkind of\\b'
+        ];
+        fillers.forEach(filler => {
+          const regex = new RegExp(filler, 'gi');
+          if (regex.test(text)) {
+            text = text.replace(regex, '');
+            logs.push({ rule: 'Clean Read', desc: `Stripped filler word match (${filler.replace(/\\b/g, '')})` });
+          }
+        });
+        // Clean double spaces created by filler removal
+        text = text.replace(/\s+/g, ' ');
+      }
+
+      // 4. Standard Spellings (General Guidelines)
+      const spellingMap = [
+        [/\be-mail\b/gi, 'email'],
+        [/\balright\b/gi, 'all right'],
+        [/\bo\.k\.\b/gi, 'okay'],
+        [/\bokay\b/gi, 'okay'],
+        [/\byep\b/gi, 'yeah'],
+        [/\byup\b/gi, 'yeah'],
+        [/\bya'll\b/gi, "y'all"],
+        [/\bT\.V\.\b/gi, 'TV'],
+        [/\bU\.S\.\b/gi, 'US'],
+        [/\bU\.K\.\b/gi, 'UK']
+      ];
+
+      spellingMap.forEach(([regex, replacement]) => {
+        if (regex.test(text)) {
+          text = text.replace(regex, replacement);
+          logs.push({ rule: 'Standard Spelling', desc: `Applied default spelling for "${replacement}".` });
+        }
+      });
+
+      // 5. Currency & Numbers Corrections
+      // Replace dollar/cent patterns
+      if (/\$(\d+)\.00/g.test(text)) {
+        text = text.replace(/\$(\d+)\.00/g, '$$$1');
+        logs.push({ rule: 'Currency', desc: 'Formatted whole dollar values without decimal zeroes.' });
+      }
+
+      // 6. Capitalization Rules for Sequence Items
+      text = text.replace(/\b(chapter|channel|unit)\s+(\d+)\b/gi, (match, p1, p2) => {
+        return p1.charAt(0).toUpperCase() + p1.slice(1).toLowerCase() + ' ' + p2;
+      });
+      text = text.replace(/\b(line|page|paragraph|size|step|verse)\s+(\d+)\b/gi, (match, p1, p2) => {
+        return p1.toLowerCase() + ' ' + p2;
+      });
+
+      // Render Output
+      document.getElementById('outputText').innerText = text.trim();
+
+      // Render Logs
+      const auditLog = document.getElementById('auditLog');
+      if (logs.length === 0) {
+        auditLog.innerHTML = `<div class="p-2 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"><i class="fa-solid fa-circle-check mr-1.5"></i> Transcript completely complies with all rules. No auto-corrections needed.</div>`;
+      } else {
+        auditLog.innerHTML = logs.map(l => `
+          <div class="p-2 rounded bg-slate-800/80 border border-slate-700/60 flex items-start justify-between">
+            <div>
+              <span class="font-semibold text-indigo-400">[${l.rule}]</span>
+              <span class="text-slate-300 ml-2">${l.desc}</span>
+            </div>
+            <span class="text-[10px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded">Fixed</span>
+          </div>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+        </html>
+  

@@ -1,239 +1,863 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verbit Transcription Compliance & Corrector Tool</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eagle Web Commerce — Full Verbit QA Compliance Engine</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .mono { font-family: 'JetBrains+Mono', monospace; }
+    :root {
+      --bg: #0b1120;
+      --surface: #1e293b;
+      --surface-alt: #0f172a;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --success: #10b981;
+      --info: #818cf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px;
+      line-height: 1.5;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    h1 { font-size: 1.35rem; color: var(--accent); }
+    .subtitle { font-size: 0.82rem; color: var(--muted); }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      align-items: center;
+      background: var(--surface);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    select, button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #0b1120;
+      font-weight: 700;
+      border: none;
+    }
+
+    button.primary:hover { background: var(--accent-hover); color: #fff; }
+    button.secondary:hover { border-color: var(--accent); }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .tab-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0b1120;
+      border-color: var(--accent);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 820px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 400px;
+      background: var(--surface-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 0.94rem;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    textarea:focus { outline: 1px solid var(--accent); }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .issue-list {
+      overflow-y: auto;
+      max-height: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .issue-card {
+      background: var(--surface-alt);
+      border-left: 4px solid var(--warn);
+      padding: 10px 12px;
+      border-radius: 5px;
+      font-size: 0.85rem;
+    }
+
+    .issue-card.error { border-left-color: var(--danger); }
+    .issue-card.info { border-left-color: var(--info); }
+    .issue-card.pass { border-left-color: var(--success); }
+
+    .issue-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .cat-pill {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #334155;
+      color: #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .sev-err { color: var(--danger); font-weight: 700; font-size: 0.75rem; }
+    .sev-warn { color: var(--warn); font-weight: 700; font-size: 0.75rem; }
+    .sev-info { color: var(--info); font-weight: 700; font-size: 0.75rem; }
+
+    .issue-rule { font-weight: 700; color: #fff; margin-bottom: 4px; }
+
+    .snippet {
+      display: inline-block;
+      background: #1e293b;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-family: monospace;
+      color: #fca5a5;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .fix-note { color: var(--muted); font-size: 0.8rem; }
+
+    /* Checklist & Reference Drawer */
+    .drawer {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .drawer.open { display: block; }
+
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .check-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.82rem;
+    }
+
+    .check-box h4 {
+      color: var(--accent);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+
+    .check-box label {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      color: #e2e8f0;
+    }
+
+    .check-box input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: var(--accent);
+    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
-
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="bg-indigo-600 p-2 rounded-lg text-white">
-          <i class="fa-solid fa-check-double text-xl"></i>
-        </div>
-        <div>
-          <h1 class="font-bold text-lg leading-tight text-white">Verbit Compliance Engine</h1>
-          <p class="text-xs text-slate-400">General Guidelines 2.0 Compliance & Auto-Corrector</p>
-        </div>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Eagle Web Commerce — Full 11-Section Verbit QA Auditor</h1>
+        <div class="subtitle">Covers Clean Read, Verbatim, Fillers, Platform, Audio, Punctuation, Capitalization, Research, Writing, Numbers & Math</div>
       </div>
-      <div class="flex items-center space-x-2">
-        <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
-          <i class="fa-solid fa-shield-halved text-indigo-400 mr-1"></i> Auto-Correction Engine Active
-        </span>
-      </div>
-    </div>
-  </header>
+      <div id="scoreBadge" class="badge">Ready to Audit</div>
+    </header>
 
-  <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col gap-6 w-full">
-
-    <!-- Mode Selector & Controls -->
-    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-4">
-        <span class="text-sm font-semibold text-slate-300">Transcription Mode:</span>
-        <div class="inline-flex rounded-lg bg-slate-900 p-1 border border-slate-700">
-          <button id="modeClean" onclick="setMode('clean')" class="flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm">
-            <i class="fa-solid fa-sparkles text-xs"></i>
-            <span>Clean Read</span>
-          </button>
-          <button id="modeVerbatim" onclick="setMode('verbatim')" class="flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white">
-            <i class="fa-solid fa-[#0000] fa-quote-left text-xs"></i>
-            <span>Full Verbatim</span>
-          </button>
-        </div>
+    <div class="toolbar">
+      <div class="control-group">
+        <label for="modeSelect">Mode:</label>
+        <select id="modeSelect">
+          <option value="clean">Clean Read</option>
+          <option value="verbatim">Verbatim</option>
+        </select>
       </div>
 
-      <div class="flex items-center space-x-3">
-        <button onclick="clearAll()" class="px-3.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-700/50 text-sm font-medium transition">
-          <i class="fa-solid fa-rotate-left mr-1.5 text-xs"></i> Clear
-        </button>
-        <button onclick="runCheck()" class="px-5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center">
-          <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Fix & Validate
-        </button>
+      <div class="control-group">
+        <label for="grammarSelect">Locale:</label>
+        <select id="grammarSelect">
+          <option value="US">US English (Default)</option>
+          <option value="UK">UK Grammar (Single Quotes)</option>
+        </select>
       </div>
+
+      <div class="control-group">
+        <label for="audioTagBox">Audio Tag Box:</label>
+        <select id="audioTagBox">
+          <option value="present">Present on Left</option>
+          <option value="absent">Not Present</option>
+        </select>
+      </div>
+
+      <button class="primary" onclick="runFullAudit()">Run Full 11-Point Audit</button>
+      <button class="secondary" onclick="autoFixSafe()">Auto-Fix Safe Rules</button>
+      <button class="secondary" onclick="toggleChecklist()">Platform & Audio Checklist</button>
+      <button class="secondary" onclick="copyText()">Copy Text</button>
+      <button class="secondary" onclick="clearAll()">Clear</button>
     </div>
 
-    <!-- Main Workspace -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-      
-      <!-- Input Panel -->
-      <div class="flex flex-col bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden">
-        <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700/60 flex items-center justify-between">
-          <span class="text-sm font-semibold text-slate-200 flex items-center">
-            <i class="fa-solid fa-file-pen text-indigo-400 mr-2"></i> Raw Transcript Input
-          </span>
-          <span id="inputCharCount" class="text-xs text-slate-400 mono">0 chars</span>
-        </div>
-        <textarea id="inputText" placeholder="Paste your transcript text here..." class="w-full h-80 lg:h-full p-4 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none mono text-sm leading-relaxed" oninput="updateStats()"></textarea>
+    <!-- Interactive Pre-Submission Checklist covering non-text Platform, Audio & Researching Terms rules -->
+    <div id="checklistDrawer" class="drawer">
+      <div class="panel-header">
+        <span>Mandatory Platform, Audio & Research Verification (Sections 4, 5 & 8)</span>
+        <button class="secondary" onclick="toggleChecklist()" style="padding:4px 10px; font-size:0.78rem;">Close</button>
       </div>
-
-      <!-- Output Panel -->
-      <div class="flex flex-col bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden">
-        <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700/60 flex items-center justify-between">
-          <span class="text-sm font-semibold text-slate-200 flex items-center">
-            <i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i> 100% Compliant Result
-          </span>
-          <button onclick="copyOutput()" class="px-2.5 py-1 text-xs font-medium rounded bg-slate-700 hover:bg-slate-600 text-slate-200 transition flex items-center">
-            <i id="copyIcon" class="fa-regular fa-copy mr-1"></i> <span id="copyText">Copy Fixed Text</span>
-          </button>
+      <div class="checklist-grid">
+        <div class="check-box">
+          <h4>4. Platform Rules</h4>
+          <label><input type="checkbox" class="qa-check" /> Worked strictly inside the platform (no MS Word formatting artifacts).</label>
+          <label><input type="checkbox" class="qa-check" /> Verified Job-Specific & Legal guidelines (which override General Guidelines).</label>
+          <label><input type="checkbox" class="qa-check" /> Speaker labels use MALE_1, FEMALE_1, or UNKNOWN_1 if names aren't listed.</label>
+          <label><input type="checkbox" class="qa-check" /> Audio tags used ONLY if the audio tag box is present on the left.</label>
+          <label><input type="checkbox" class="qa-check" /> Final review complete (cannot alter text after submission).</label>
         </div>
-        <div id="outputText" class="w-full h-80 lg:h-full p-4 bg-slate-950/40 text-emerald-300 mono text-sm leading-relaxed overflow-y-auto whitespace-pre-wrap select-all">Result will appear here after clicking "Fix & Validate"...</div>
-      </div>
-
-    </div>
-
-    <!-- Changes & Issues Log -->
-    <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-4">
-      <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center">
-        <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Correction & Rule Verification Audit Log
-      </h3>
-      <div id="auditLog" class="space-y-2 text-xs max-h-48 overflow-y-auto pr-2">
-        <div class="text-slate-500 italic">No analysis performed yet. Paste a transcript and click "Fix & Validate".</div>
+        <div class="check-box">
+          <h4>5. Audio Rules</h4>
+          <label><input type="checkbox" class="qa-check" /> If &ge;80% foreign language: unassigned as "Unsupported Language".</label>
+          <label><input type="checkbox" class="qa-check" /> Mixed foreign/English: transcribed English only (no copied subtitles); [foreign] or inaudible tag used.</label>
+          <label><input type="checkbox" class="qa-check" /> Singing: transcribed every lyric verbatim (researched, NOT copy-pasted); ignored background music.</label>
+          <label><input type="checkbox" class="qa-check" /> Blank file unassigned as "No speech detected"; unintelligible chatter tagged [BACKGROUND] or inaudible.</label>
+        </div>
+        <div class="check-box">
+          <h4>8. Researching Terms</h4>
+          <label><input type="checkbox" class="qa-check" /> Checked video presentation, Notes section, and Glossary for unfamiliar terms.</label>
+          <label><input type="checkbox" class="qa-check" /> Used CTRL+R Verbit search tool or Google search to confirm spelling.</label>
+          <label><input type="checkbox" class="qa-check" /> Added confirmed terms to Glossary (with URL + "Online" selected if found online).</label>
+          <label><input type="checkbox" class="qa-check" /> Used inaudible tag for any term that could not be confirmed.</label>
+        </div>
       </div>
     </div>
 
-  </main>
+    <div class="tabs" id="categoryTabs">
+      <button class="tab-btn active" onclick="filterCategory('ALL', this)">All Issues (<span id="cnt-ALL">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Clean/Verbatim', this)">Clean/Verbatim (<span id="cnt-Clean/Verbatim">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Fillers', this)">Fillers (<span id="cnt-Fillers">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Platform/Audio', this)">Platform & Audio (<span id="cnt-Platform/Audio">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Punctuation', this)">Punctuation (<span id="cnt-Punctuation">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Capitalization', this)">Capitalization (<span id="cnt-Capitalization">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Writing/Research', this)">Writing & Research (<span id="cnt-Writing/Research">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Numbers', this)">Numbers (<span id="cnt-Numbers">0</span>)</button>
+      <button class="tab-btn" onclick="filterCategory('Math', this)">Math (<span id="cnt-Math">0</span>)</button>
+    </div>
+
+    <div class="main-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <span>Transcript Input</span>
+          <span id="wordCount" style="font-size:0.8rem; color:var(--muted);">0 words | 0 chars</span>
+        </div>
+        <textarea id="transcriptInput" placeholder="Paste your transcript here. All 11 sections of the General Guidelines will be audited automatically..."></textarea>
+        <div class="meta-bar">
+          <span>Shortcut: Press CTRL+R inside Verbit platform for unfamiliar terms.</span>
+          <span id="checklistStatus">Checklist: 0/13 verified</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span>Compliance Audit Report</span>
+          <span id="issueCount" style="font-size:0.8rem; color:var(--muted);">0 issues</span>
+        </div>
+        <div id="issueList" class="issue-list">
+          <div class="issue-card pass">
+            <div class="issue-rule">System Ready</div>
+            <div class="fix-note">Select Clean Read or Verbatim, paste your transcript, and click <strong>Run Full 11-Point Audit</strong>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    let activeMode = 'clean';
+    const inputEl = document.getElementById('transcriptInput');
+    const issueListEl = document.getElementById('issueList');
+    const scoreBadgeEl = document.getElementById('scoreBadge');
+    const issueCountEl = document.getElementById('issueCount');
+    const wordCountEl = document.getElementById('wordCount');
+    let allDetectedIssues = [];
+    let currentFilter = 'ALL';
 
-    function setMode(mode) {
-      activeMode = mode;
-      const cleanBtn = document.getElementById('modeClean');
-      const verbBtn = document.getElementById('modeVerbatim');
+    inputEl.addEventListener('input', () => {
+      const text = inputEl.value.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      wordCountEl.textContent = `${words} words | ${inputEl.value.length} chars`;
+    });
+
+    document.querySelectorAll('.qa-check').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const checked = document.querySelectorAll('.qa-check:checked').length;
+        document.getElementById('checklistStatus').textContent = `Checklist: ${checked}/13 verified`;
+      });
+    });
+
+    function toggleChecklist() {
+      document.getElementById('checklistDrawer').classList.toggle('open');
+    }
+
+    function pushIssue(category, severity, rule, match, suggestion) {
+      allDetectedIssues.push({ category, severity, rule, match, suggestion });
+    }
+function runFullAudit() {
+      const text = inputEl.value;
+      const mode = document.getElementById('modeSelect').value;
+      const locale = document.getElementById('grammarSelect').value;
+      const tagBox = document.getElementById('audioTagBox').value;
+      allDetectedIssues = [];
+
+      if (!text.trim()) {
+        renderFilteredIssues();
+        scoreBadgeEl.textContent = "No Speech Detected";
+        scoreBadgeEl.style.background = "var(--warn)";
+        scoreBadgeEl.style.color = "#0b1120";
+        pushIssue('Platform/Audio', 'error', 'Empty Transcript ("No speech detected")', '[Blank Input]', 'If a job has absolutely no text (completely blank), unassign it due to reason "No speech detected".');
+        updateCategoryCounts();
+        renderFilteredIssues();
+        return;
+      }
+
+      // =========================================================================
+      // 1 & 2. CLEAN READ OVERVIEW vs VERBATIM OVERVIEW
+      // =========================================================================
+      if (mode === 'clean') {
+        // Stutters, partial words, false starts with dashes
+        const dashStutters = text.match(/\b[a-zA-Z]{1,4}-\s*[a-zA-Z]+/g);
+        if (dashStutters) {
+          const validPrefixes = /^(e-|co-|re-|pre-|non-|self-|ex-|mid-|sub-|up-|in-|on-|off-|x-|t-|u-|well-|high-|low-|full-|part-|real-|open-|long-|short-|multi-|anti-|post-|pro-|semi-|over-|under-|week-and-a-half|45-degree)/i;
+          const bad = dashStutters.filter(w => !validPrefixes.test(w));
+          if (bad.length) {
+            pushIssue('Clean/Verbatim', 'error', 'Clean Read: Stutter / Partial Word / False Start', bad.slice(0, 6).join(', '), 'Omit any stutters, partial words, and false starts in Clean Read (e.g., change "I-I-I\'m" to "I\'m", "fr- freezing" to "freezing").');
+          }
+        }
+
+        // Slang & informal contractions
+        const slang = text.match(/\b(gonna|wanna|gotta|kinda|sorta|dunno|ain't|init|innit|bruv|bro|dude)\b/gi);
+        if (slang) {
+          pushIssue('Clean/Verbatim', 'warn', 'Clean Read: Slang / Non-Standard Speech', [...new Set(slang)].join(', '), 'Clean Read transcription should be free of slang and irrelevant interjections (e.g., use "going to" instead of "gonna").');
+        }
+
+        // Repeated consecutive words (e.g., "the the", "I I")
+        const repetitions = text.match(/\b(\w+)\s+\1\b/gi);
+        if (repetitions) {
+          pushIssue('Clean/Verbatim', 'error', 'Clean Read: Word Repetition', repetitions.join(', '), 'Omit stutters and repetitions in Clean Read.');
+        }
+
+        // Frequent "So" or "And" at start of sentences
+        const sentenceStarts = text.match(/(?:^|[.?!]\s+)(So|And)\b/g);
+        if (sentenceStarts && sentenceStarts.length >= 3) {
+          pushIssue('Clean/Verbatim', 'info', 'Clean Read: Repeated Sentence-Initial "So" / "And"', `${sentenceStarts.length} occurrences found`, 'If the speaker begins many thoughts with "So" or "And", omit them unless they contribute meaning or form a logical link between sentences.');
+        }
+      } else {
+        // Verbatim Mode Checks
+        const missingDashStutter = text.match(/\b([a-zA-Z])\s+\1[a-zA-Z]+\b/g);
+        if (missingDashStutter) {
+          pushIssue('Clean/Verbatim', 'warn', 'Verbatim: Stutter/Partial Word Missing Dash', missingDashStutter.join(', '), 'For stutters, partial words, and false starts in Verbatim, use a dash (e.g., "I-I-I\'m", "fr- freezing", "hungry for-").');
+        }
+      }
+
+      // =========================================================================
+      // 3. FILLER WORDS & SOUND WORDS
+      // =========================================================================
+      const pureFillers = text.match(/\b(um+|uh+|uh-huh|er+|ah+|you know)\b/gi);
+      const contextFillers = text.match(/\b(like|all right|sort of|kind of)\b/gi);
+      const soundWords = text.match(/\b(yada, yada, yada|bang|boom|whoosh|splat)\b/gi);
 
       if (mode === 'clean') {
-        cleanBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm";
-        verbBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white";
+        if (pureFillers) {
+          pushIssue('Fillers', 'error', 'Clean Read: Filler Words Must Be Omitted', [...new Set(pureFillers)].join(', '), 'Fillers are ONLY added in Verbatim jobs. Omit "um", "uh-huh", "you know", etc. in Clean Read.');
+        }
+        if (contextFillers) {
+          pushIssue('Fillers', 'info', 'Clean Read: Context-Dependent Words ("like", "kind of", "all right")', [...new Set(contextFillers)].join(', '), 'Omit if used as filler ("It was, like, so rainy"), but KEEP if they preserve meaning ("I felt like kind of a fraud", "Looks like rain", "A sparrow is a kind of bird").');
+        }
+        if (soundWords) {
+          pushIssue('Fillers', 'warn', 'Clean Read: Non-Verbal / Sound Words', [...new Set(soundWords)].join(', '), 'Clean Read should be free of non-verbal communication and irrelevant interjections.');
+        }
       } else {
-        verbBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm";
-        cleanBtn.className = "flex items-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white";
-      }
-    }
-
-    function updateStats() {
-      const text = document.getElementById('inputText').value;
-      document.getElementById('inputCharCount').innerText = `${text.length} chars`;
-    }
-
-    function clearAll() {
-      document.getElementById('inputText').value = '';
-      document.getElementById('outputText').innerText = 'Result will appear here after clicking "Fix & Validate"...';
-      document.getElementById('auditLog').innerHTML = '<div class="text-slate-500 italic">No analysis performed yet. Paste a transcript and click "Fix & Validate".</div>';
-      updateStats();
-    }
-
-    function copyOutput() {
-      const output = document.getElementById('outputText').innerText;
-      if (!output || output.startsWith('Result will appear')) return;
-      navigator.clipboard.writeText(output);
-      const copyText = document.getElementById('copyText');
-      copyText.innerText = 'Copied!';
-      setTimeout(() => copyText.innerText = 'Copy Fixed Text', 2000);
-    }
-
-    function runCheck() {
-      const input = document.getElementById('inputText').value;
-      if (!input.trim()) return;
-
-      let text = input;
-      let logs = [];
-
-      // 1. Ellipsis Removal Rule
-      if (text.includes('...')) {
-        text = text.replace(/\.\.\./g, '');
-        logs.push({ rule: 'Punctuation', desc: 'Removed ellipses (...), as forbidden in Verbit General Guidelines.' });
+        // Verbatim: Check commas around filler words
+        const unbracketedFillers = text.match(/(?<!,\s)\b(um+|uh+|uh-huh|you know)\b(?!,)/gi);
+        if (unbracketedFillers) {
+          pushIssue('Fillers', 'error', 'Verbatim: Missing Commas Around Filler Words', unbracketedFillers.slice(0, 6).join(', '), 'Always place commas around filler words (e.g., "They went, um, to the store.").');
+        }
+        if (contextFillers) {
+          pushIssue('Fillers', 'info', 'Verbatim: Check Commas on Contextual Fillers', [...new Set(contextFillers)].join(', '), 'If "like", "kind of", "sort of", or "all right" is acting as a filler, wrap it in commas ("It was, like, so rainy"). If not a filler ("Looks like rain"), do not add commas.');
+        }
       }
 
-      // 2. Exclamation Mark Removal
-      if (/[!]/g.test(text.replace(/Yahoo!/gi, ''))) {
-        text = text.replace(/([^Y]|^)!(?![\w])/g, '$1.');
-        logs.push({ rule: 'Punctuation', desc: 'Removed exclamation marks (except for allowed brand "Yahoo!").' });
+      // =========================================================================
+      // 4 & 5. PLATFORM RULES & AUDIO RULES
+      // =========================================================================
+      // Speaker label formatting
+      const wrongSpeakerFormat = text.match(/(?:^|\n)\s*(Speaker\s*\d+|Male\s*\d+|Female\s*\d+|Unknown\s*\d+|Man|Woman)\s*:/gi);
+      if (wrongSpeakerFormat) {
+        pushIssue('Platform/Audio', 'error', 'Platform Rule: Incorrect Speaker Tag Format', wrongSpeakerFormat.map(s => s.trim()).join(', '), 'If speaker names are not listed, use exact uppercase format: MALE_1, FEMALE_1, or UNKNOWN_1.');
       }
 
-      // 3. Clean Read Filler Words Removal
-      if (activeMode === 'clean') {
-        const fillers = [
-          '\\bum\\b', '\\buh\\b', '\\buh-huh\\b', '\\bah\\b', 
-          '\\byou know\\b', '\\blike,?\\b', '\\bsort of\\b', '\\bkind of\\b'
-        ];
-        fillers.forEach(filler => {
-          const regex = new RegExp(filler, 'gi');
-          if (regex.test(text)) {
-            text = text.replace(regex, '');
-            logs.push({ rule: 'Clean Read', desc: `Stripped filler word match (${filler.replace(/\\b/g, '')})` });
+      // Audio tags check
+      const audioTags = text.match(/\[[^\]]+\]/g);
+      if (audioTags) {
+        if (tagBox === 'absent') {
+          pushIssue('Platform/Audio', 'error', 'Platform/Audio Rule: Audio Tags Used Without Tag Box', audioTags.join(', '), 'Only use audio tags if an audio tag box is present on the left side of the screen. Otherwise transcribe understood words or use standard inaudible tag.');
+        } else {
+          const nonStandardTags = audioTags.filter(t => !/^\[(foreign|BACKGROUND|inaudible|laughter|music|applause|crosstalk)\]$/i.test(t));
+          if (nonStandardTags.length) {
+            pushIssue('Platform/Audio', 'warn', 'Audio Rule: Verify Tag Format', nonStandardTags.join(', '), 'Ensure tags match the left-side audio tag box (e.g., [foreign], [BACKGROUND], or inaudible tag).');
           }
-        });
-        // Clean double spaces created by filler removal
-        text = text.replace(/\s+/g, ' ');
+        }
       }
 
-      // 4. Standard Spellings (General Guidelines)
-      const spellingMap = [
-        [/\be-mail\b/gi, 'email'],
-        [/\balright\b/gi, 'all right'],
-        [/\bo\.k\.\b/gi, 'okay'],
-        [/\bokay\b/gi, 'okay'],
-        [/\byep\b/gi, 'yeah'],
-        [/\byup\b/gi, 'yeah'],
-        [/\bya'll\b/gi, "y'all"],
-        [/\bT\.V\.\b/gi, 'TV'],
-        [/\bU\.S\.\b/gi, 'US'],
-        [/\bU\.K\.\b/gi, 'UK']
+      // MS Word smart quotes / external editor paste artifacts
+      const smartQuotes = text.match(/[“”‘’—–]/g);
+      if (smartQuotes) {
+        pushIssue('Platform/Audio', 'warn', 'Platform Rule: External Editor Characters Detected', [...new Set(smartQuotes)].join(' '), 'Work only in the platform (do not use Microsoft Word). Smart quotes/em-dashes suggest external editor pasting.');
+      }
+
+      // =========================================================================
+      // 6. PUNCTUATION
+      // =========================================================================
+      // Ellipsis
+      const ellipsis = text.match(/(\.\.\.|…)/g);
+      if (ellipsis) {
+        pushIssue('Punctuation', 'error', 'Forbidden Ellipsis (...)', ellipsis.join(' '), 'Do not use ellipsis (...) in any job.');
+      }
+
+      // Exclamation marks (Exception: Yahoo!)
+      const exclamations = text.match(/\b(?!Yahoo!)\w+!|(?<!Yahoo)!/g);
+      if (exclamations) {
+        pushIssue('Punctuation', 'error', 'Forbidden Exclamation Mark (!)', exclamations.slice(0, 5).join(', '), 'Exclamation marks are never to be used (Exception: companies like Yahoo!).');
+      }
+
+      // Double periods on names/brands ending a sentence
+      const doublePeriods = text.match(/\b(Inc|Ltd|Corp|Co|Jr|Sr|Mr|Mrs|Dr|St)\.\./g);
+      if (doublePeriods) {
+        pushIssue('Punctuation', 'error', 'Double Period on Abbreviation', doublePeriods.join(', '), 'Do not add another period to names or brands if they end a sentence (e.g., "I work at Nabisco Inc.").');
+      }
+
+      // Comma after sentence-initial "So"
+      const soComma = text.match(/(?:^|[.?!]\s+|:\s+)So,/gm);
+      if (soComma) {
+        pushIssue('Punctuation', 'error', 'Comma After Sentence-Initial "So"', soComma.join(' | '), 'When the word "So" begins a sentence, do not place a comma afterward (e.g., "So what do you think of my haircut?").');
+      }
+
+      // Accent marks / special keyboard characters
+      const accents = text.match(/[^\x00-\x7F]/g);
+      if (accents) {
+        pushIssue('Punctuation', 'error', 'Forbidden Accent Marks / Special Letters', [...new Set(accents)].join(' '), 'Do not add accent marks or special letters not found on a typical keyboard (e.g., write "fiance", "El Nino").');
+      }
+
+      // US Double Quotes vs UK Single Quotes
+      if (locale === 'US') {
+        const singleQuotes = text.match(/(?:^|\s)'[^']+'/g);
+        if (singleQuotes) {
+          pushIssue('Punctuation', 'warn', 'US Grammar: Single Quotation Marks Used', singleQuotes.slice(0, 3).join(', '), 'Use double quotation marks ("...") when the speaker is quoting someone else in US English.');
+        }
+      } else {
+        const doubleQuotes = text.match(/"[^"]+"/g);
+        if (doubleQuotes) {
+          pushIssue('Punctuation', 'warn', 'UK Grammar: Double Quotation Marks Used', doubleQuotes.slice(0, 3).join(', '), "Job-specific guidelines set to UK grammar: use single quotation marks ('...') for quotes.");
+        }
+      }
+
+      // Missing comma before quote
+      const noCommaBeforeQuote = text.match(/\b(said|says|told me|asked|yelled|replied|shouted)\s+["']/gi);
+      if (noCommaBeforeQuote) {
+        pushIssue('Punctuation', 'warn', 'Missing Comma Before Quotation Marks', noCommaBeforeQuote.join(', '), 'Before placing quotation marks, a comma is almost always necessary (e.g., The driver said, "Please fasten your seatbelts.").');
+      }
+
+      // Oxford comma check (X, Y and Z)
+      const missingOxford = text.match(/\b[a-zA-Z]+,\s+[a-zA-Z]+\s+and\s+[a-zA-Z]+\b/g);
+      if (missingOxford) {
+        pushIssue('Punctuation', 'warn', 'Possible Missing Oxford Comma', missingOxford.slice(0, 4).join(' | '), 'Use the Oxford comma in lists of three or more items, placing a comma before "and" (e.g., "apples, pears, and blueberries").');
+      }
+
+      // UI Button / Page capitalization & quotes check
+      const uiButtons = text.match(/\b(press|click|tap|select)\s+["']?[a-z]+["']?/gi);
+      if (uiButtons) {
+        const uncap = uiButtons.filter(b => /\b(press|click|tap|select)\s+["']?[a-z]/.test(b));
+        if (uncap.length) {
+          pushIssue('Punctuation', 'warn', 'UI Button / Menu Formatting', uncap.join(', '), 'Capitalize interface/menu buttons and enclose in double quotes when describing clicking a button (e.g., press "Upload", click "Okay"). Capitalize tab/page names without quotes (e.g., Install page).');
+        }
+      }
+  // =========================================================================
+      // 7. CAPITALIZATION
+      // =========================================================================
+      // Lowercase start of sentence or quote
+      const lowerStart = text.match(/(?:^|[.?!]\s+|["'])\s*[a-z]/g);
+      if (lowerStart) {
+        pushIssue('Capitalization', 'error', 'Lowercase First Word of Sentence or Quote', lowerStart.slice(0, 5).join(' | '), 'Capitalize the first word of every sentence or quote.');
+      }
+
+      // Sequence items that MUST be capitalized: Chapter, Channel, Unit
+      const lowerSeq = text.match(/\b(chapter|channel|unit)\s+\d+\b/g);
+      if (lowerSeq) {
+        pushIssue('Capitalization', 'error', 'Capitalize Item in Sequence', lowerSeq.join(', '), 'Capitalize items in sequence: Chapter 4, Channel 12, Unit 20.');
+      }
+
+      // Sequence exceptions that MUST remain lowercase mid-sentence: line, page, paragraph, size, step, verse
+      const upperSeqExceptions = text.match(/(?<![.?!]\s+)\b(Line|Page|Paragraph|Size|Step|Verse)\s+\d+\b/g);
+      if (upperSeqExceptions) {
+        pushIssue('Capitalization', 'error', 'Lowercase Sequence Exception Capitalized', upperSeqExceptions.join(', '), 'Exceptions must stay lowercase: line 3, page 23, paragraph 14, size 36, step 1, verse 2.');
+      }
+
+      // Common proper nouns / religious / nature / nationalities lowercase check
+      const properNouns = text.match(/\b(god|bible|christianity|muslim|jewish|hindu|ethiopia|african union|nile river|amazon rainforest|moby dick|facebook|microsoft azure)\b/g);
+      if (properNouns) {
+        pushIssue('Capitalization', 'error', 'Proper Noun / Religious / Institution Capitalization', [...new Set(properNouns)].join(', '), 'Capitalize names of people, titles, nationalities, places, institutions, companies, nature sites, books, and religious terms.');
+      }
+
+      // Spelled-out terms (e.g., v-e-r-b-i-t instead of V-E-R-B-I-T)
+      const lowerSpelledOut = text.match(/\b[a-z](?:-[a-z]){2,}\b/g);
+      if (lowerSpelledOut) {
+        pushIssue('Capitalization', 'error', 'Spelled-Out Term Not Capitalized', lowerSpelledOut.join(', '), 'Capitalize spelled-out terms with hyphens (e.g., V-E-R-B-I-T).');
+      }
+
+      // =========================================================================
+      // 8 & 9. RESEARCHING TERMS & WRITING RULES
+      // =========================================================================
+      const writingRules = [
+        { regex: /\be-mail\b/gi, fix: 'Use "email" (not "e-mail").' },
+        { regex: /\balright\b/gi, fix: 'Use "all right" (not "alright").' },
+        { regex: /\b(O\.K\.?|OK)\b/g, fix: 'Use "okay" (not "O.K" or "OK").' },
+        { regex: /\b(yep|yup)\b/gi, fix: 'Use "yeah" (not "yep" or "yup").' },
+        { regex: /\bya'll\b/gi, fix: 'Use "y\'all" (not "ya\'ll").' },
+        { regex: /(?:^|[.?!]\s+)Am\s+(?=[a-z])/g, fix: 'Use "I\'m" (not "Am") when speaker means "I am".' },
+        { regex: /\b(T\.V\.|U\.S\.|U\.K\.|E\.U\.)\b/g, fix: 'Use "TV", "US", "UK", "EU" without periods.' },
+        // Common UK spellings vs US default
+        { regex: /\b(colour|favour|honour|behaviour|neighbour|organise|realise|centre|theatre|programme|grey|travelling|cancelled)\b/gi, fix: 'Default spelling is US English unless specified otherwise (e.g., color, favor, center, gray, traveling, canceled).' }
       ];
 
-      spellingMap.forEach(([regex, replacement]) => {
-        if (regex.test(text)) {
-          text = text.replace(regex, replacement);
-          logs.push({ rule: 'Standard Spelling', desc: `Applied default spelling for "${replacement}".` });
+      writingRules.forEach(rule => {
+        const found = text.match(rule.regex);
+        if (found) {
+          pushIssue('Writing/Research', 'error', 'Writing Rules Standard Violation', [...new Set(found)].join(', '), rule.fix);
         }
       });
 
-      // 5. Currency & Numbers Corrections
-      // Replace dollar/cent patterns
-      if (/\$(\d+)\.00/g.test(text)) {
-        text = text.replace(/\$(\d+)\.00/g, '$$$1');
-        logs.push({ rule: 'Currency', desc: 'Formatted whole dollar values without decimal zeroes.' });
+      // Researching terms reminder if technical/uncommon capitalized words exist
+      const unknownProper = text.match(/(?<![.?!]\s+)\b[A-Z][a-z]+[A-Z][a-zA-Z]*\b/g);
+      if (unknownProper) {
+        pushIssue('Writing/Research', 'info', 'Verify CamelCase / Technical Terms in Glossary', [...new Set(unknownProper)].join(', '), 'Confirm spelling via video presentation, Notes, Glossary, or CTRL+R search tool. Add confirmed terms to Glossary.');
       }
 
-      // 6. Capitalization Rules for Sequence Items
-      text = text.replace(/\b(chapter|channel|unit)\s+(\d+)\b/gi, (match, p1, p2) => {
-        return p1.charAt(0).toUpperCase() + p1.slice(1).toLowerCase() + ' ' + p2;
-      });
-      text = text.replace(/\b(line|page|paragraph|size|step|verse)\s+(\d+)\b/gi, (match, p1, p2) => {
-        return p1.toLowerCase() + ' ' + p2;
-      });
+      // =========================================================================
+      // 10. NUMBERS, DATES, TIME & CURRENCY
+      // =========================================================================
+      // 0-9 spelled out rule (outside equations, dates, currency, time, decimals, height, item numbers)
+      const standaloneSingleDigits = text.match(/(?<![\d:./$€£+-])\b[0-9]\b(?![\d:./%'+-])/g);
+      if (standaloneSingleDigits) {
+        pushIssue('Numbers', 'warn', 'Single-Digit Number (0-9) Formatting', standaloneSingleDigits.slice(0, 6).join(', '), 'Spell out 0-9 (zero to nine) in regular speech. Use digits ONLY for 10+, math equations ($1+2=3$), dates, height (6\'7"), percentages (4%), lists (2, 5, 7), or item numbers (size 6, Quiz 2, Chapter 7).');
+      }
 
-      // Render Output
-      document.getElementById('outputText').innerText = text.trim();
+      // Numbers at the beginning of a sentence
+      const startDigit = text.match(/(?:^|[.?!]\s+)\d+(?:,\d+)?\b(?!\s*(?:was|is|were|had|has|in|marked|saw|brought)\b)/gm);
+      if (startDigit) {
+        pushIssue('Numbers', 'error', 'Digit at Beginning of Sentence', startDigit.join(', '), 'Spell out numbers at the beginning of a sentence (e.g., "Sixty-four", "Twelve billion", "Eleventh", "Two to twelve"). Exceptions: Years ("2020 was a tough year"), Decimals ("0.03 percent"), Equations ("2+2=4").');
+      }
 
-      // Render Logs
-      const auditLog = document.getElementById('auditLog');
-      if (logs.length === 0) {
-        auditLog.innerHTML = `<div class="p-2 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"><i class="fa-solid fa-circle-check mr-1.5"></i> Transcript completely complies with all rules. No auto-corrections needed.</div>`;
-      } else {
-        auditLog.innerHTML = logs.map(l => `
-          <div class="p-2 rounded bg-slate-800/80 border border-slate-700/60 flex items-start justify-between">
-            <div>
-              <span class="font-semibold text-indigo-400">[${l.rule}]</span>
-              <span class="text-slate-300 ml-2">${l.desc}</span>
-            </div>
-            <span class="text-[10px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded">Fixed</span>
+      // Spoken decimals ("three point five" -> "3.5")
+      const spokenDecimals = text.match(/\b(zero|one|two|three|four|five|six|seven|eight|nine|\d+)\s+point\s+(zero|one|two|three|four|five|six|seven|eight|nine|\d+)\b/gi);
+      if (spokenDecimals) {
+        pushIssue('Numbers', 'error', 'Decimal Number Format', spokenDecimals.join(', '), 'Use numerals for decimals: write "3.5" (not "three point five").');
+      }
+
+      // Currency cents ($0.33 -> 33 cents)
+      const dollarCents = text.match(/\$0\.\d{2}\b/g);
+      if (dollarCents) {
+        pushIssue('Numbers', 'error', 'Currency Cents Format', dollarCents.join(', '), 'Write cents as "33 cents" (not "$0.33").');
+      }
+
+      // Currency 0-9 ($2 -> two dollars)
+      const smallDollar = text.match(/\$\b[1-9]\b(?!\.\d|\s*(?:million|billion|trillion))/gi);
+      if (smallDollar) {
+        pushIssue('Numbers', 'error', 'Currency 0-9 Format', smallDollar.join(', '), 'If 0-9, spell out currency: "two dollars" (not "$2"). Use "$15" for 10 and up, or "$1.5 million" for decimals.');
+      }
+
+      // Time formatting (am/pm lowercase or a.m./p.m.)
+      const badTime = text.match(/\b\d{1,2}:\d{2}\s*(?:a\.m\.|p\.m\.|am|pm)\b/g);
+      if (badTime) {
+        pushIssue('Numbers', 'error', 'Time Format (AM/PM)', badTime.join(', '), 'Use uppercase AM/PM without periods: "5:00 PM" or "5:00 AM" (or spell out "five o\'clock").');
+      }
+
+      // =========================================================================
+      // 11. MATHEMATICAL GUIDELINES
+      // =========================================================================
+      // Math equations using words instead of symbols/digits
+      const mathWordEquations = text.match(/\b\d+\s+(plus|minus|times|divided by|equals)\s+\d+/gi);
+      if (mathWordEquations) {
+        pushIssue('Math', 'error', 'Math Equation Using Words Instead of Symbols', mathWordEquations.join(', '), 'When writing out math equations, always use digits and symbols: + (plus), - (minus/negative), * (times), / (divided by), = (equals), () (parentheses). E.g., "21+3=24", "3*2=6".');
+      }
+
+      // Regular speech using math symbols (+, *, =) instead of words
+      const speechMathSymbols = text.match(/\b[a-zA-Z]{2,}\s+[+*=/]\s+[a-zA-Z]{2,}\b/g);
+      if (speechMathSymbols) {
+        pushIssue('Math', 'error', 'Regular Speech Using Math Symbols', speechMathSymbols.join(', '), 'Within regular speech, use words for symbols (e.g., "With two kids, plus three dogs, it\'s chaotic").');
+      }
+
+      // Greek letters lowercase check
+      const lowerGreek = text.match(/\b(alpha|beta|sigma|mu|epsilon|pi|tau)\b/g);
+      if (lowerGreek) {
+        pushIssue('Math', 'warn', 'Greek Letters Capitalization', [...new Set(lowerGreek)].join(', '), 'Capitalize Greek letters in mathematical contexts: Alpha, Beta, Sigma, Mu, Epsilon, Pi, Tau (e.g., "3 Pi radians").');
+      }
+
+      // Trig functions abbreviated (sin, cos, tan instead of sine, cosine, tangent)
+      const shortTrig = text.match(/\b(sin|cos|tan)\s*\(/g);
+      if (shortTrig) {
+        pushIssue('Math', 'warn', 'Trigonometric Function Abbreviation', shortTrig.join(', '), 'Spell out trigonometric functions: sine, cosine, tangent.');
+      }
+
+      // Degree symbol (°) instead of word "degrees" or "-degree"
+      const degreeSymbol = text.match(/\d+\s*°/g);
+      if (degreeSymbol) {
+        pushIssue('Math', 'error', 'Degree Symbol Used', degreeSymbol.join(', '), 'Write out degrees: "270 degrees" or "45-degree angle" (avoid non-keyboard symbols).');
+      }
+
+      updateCategoryCounts();
+      renderFilteredIssues();
+    }
+
+    function updateCategoryCounts() {
+      const categories = ['Clean/Verbatim', 'Fillers', 'Platform/Audio', 'Punctuation', 'Capitalization', 'Writing/Research', 'Numbers', 'Math'];
+      document.getElementById('cnt-ALL').textContent = allDetectedIssues.length;
+      categories.forEach(cat => {
+        const count = allDetectedIssues.filter(i => i.category === cat).length;
+        document.getElementById(`cnt-${cat}`).textContent = count;
+      });
+    }
+
+    function filterCategory(cat, btnEl) {
+      currentFilter = cat;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      renderFilteredIssues();
+    }
+
+    function renderFilteredIssues() {
+      const filtered = currentFilter === 'ALL'
+        ? allDetectedIssues
+        : allDetectedIssues.filter(i => i.category === currentFilter);
+
+      issueCountEl.textContent = `${filtered.length} issue${filtered.length === 1 ? '' : 's'} shown (${allDetectedIssues.length} total)`;
+      issueListEl.innerHTML = '';
+
+      if (allDetectedIssues.length === 0) {
+        scoreBadgeEl.textContent = "100% Rule Compliant";
+        scoreBadgeEl.style.background = "var(--success)";
+        scoreBadgeEl.style.color = "#0b1120";
+        issueListEl.innerHTML = `
+          <div class="issue-card pass">
+            <div class="issue-rule">Zero Automated Violations Found</div>
+            <div class="fix-note">All 11 guideline categories passed automated inspection. Review the Platform & Audio Checklist before final submission.</div>
+          </div>`;
+        return;
+      }
+
+      const criticalCount = allDetectedIssues.filter(i => i.severity === 'error').length;
+      scoreBadgeEl.textContent = `${criticalCount} Critical | ${allDetectedIssues.length - criticalCount} Warnings/Info`;
+      scoreBadgeEl.style.background = criticalCount > 0 ? "var(--danger)" : "var(--warn)";
+      scoreBadgeEl.style.color = "#fff";
+
+      if (filtered.length === 0) {
+        issueListEl.innerHTML = `<div class="issue-card pass"><div class="issue-rule">No issues in ${currentFilter}</div></div>`;
+        return;
+      }
+
+      filtered.forEach(issue => {
+        const card = document.createElement('div');
+        card.className = `issue-card ${issue.severity}`;
+        const sevLabel = issue.severity === 'error' ? 'CRITICAL' : (issue.severity === 'warn' ? 'WARNING' : 'VERIFY');
+        const sevClass = issue.severity === 'error' ? 'sev-err' : (issue.severity === 'warn' ? 'sev-warn' : 'sev-info');
+
+        card.innerHTML = `
+          <div class="issue-top">
+            <span class="cat-pill">${issue.category}</span>
+            <span class="${sevClass}">${sevLabel}</span>
           </div>
-        `).join('');
-      }
+          <div class="issue-rule">${issue.rule}</div>
+          <div class="snippet">${escapeHtml(issue.match)}</div>
+          <div class="fix-note">${issue.suggestion}</div>
+        `;
+        issueListEl.appendChild(card);
+      });
+    }
+
+    function autoFixSafe() {
+      let text = inputEl.value;
+      if (!text.trim()) return;
+
+      // Writing rules
+      text = text.replace(/\be-mail\b/gi, m => m[0] === 'E' ? 'Email' : 'email');
+      text = text.replace(/\balright\b/gi, m => m[0] === 'A' ? 'All right' : 'all right');
+      text = text.replace(/\b(O\.K\.?|OK)\b/g, 'okay');
+      text = text.replace(/\bya'll\b/gi, m => m[0] === 'Y' ? "Y'all" : "y'all");
+      text = text.replace(/\bT\.V\./g, 'TV');
+      text = text.replace(/\bU\.S\./g, 'US');
+      text = text.replace(/\bU\.K\./g, 'UK');
+      text = text.replace(/\bE\.U\./g, 'EU');
+
+      // Punctuation rules
+      text = text.replace(/(^|[.?!]\s+|:\s+)So,/gm, '$1So');
+      text = text.replace(/\b(Inc|Ltd|Corp|Co|Mr|Mrs|Dr|St|Jr|Sr)\.\./g, '$1.');
+      text = text.replace(/(\.\.\.|…)/g, '.');
+      text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
+      // Capitalization sequence items
+      text = text.replace(/\b(chapter|channel|unit)\s+(\d+)\b/g, (_, w, n) => `${w[0].toUpperCase()}${w.slice(1)} ${n}`);
+      text = text.replace(/(?<![.?!]\s+)\b(Line|Page|Paragraph|Size|Step|Verse)\s+(\d+)\b/g, (_, w, n) => `${w.toLowerCase()} ${n}`);
+
+      // Time AM/PM
+      text = text.replace(/\b(\d{1,2}:\d{2})\s*(a\.m\.|am)\b/gi, '$1 AM');
+      text = text.replace(/\b(\d{1,2}:\d{2})\s*(p\.m\.|pm)\b/gi, '$1 PM');
+
+      inputEl.value = text;
+      inputEl.dispatchEvent(new Event('input'));
+      runFullAudit();
+    }
+
+    function copyText() {
+      inputEl.select();
+      document.execCommand('copy');
+      scoreBadgeEl.textContent = "Copied to Clipboard!";
+    }
+
+    function clearAll() {
+      inputEl.value = '';
+      allDetectedIssues = [];
+      updateCategoryCounts();
+      inputEl.dispatchEvent(new Event('input'));
+      issueCountEl.textContent = '0 issues';
+      scoreBadgeEl.textContent = 'Ready to Audit';
+      scoreBadgeEl.style.background = 'var(--surface)';
+      scoreBadgeEl.style.color = 'var(--text)';
+      issueListEl.innerHTML = `
+        <div class="issue-card pass">
+          <div class="issue-rule">System Ready</div>
+          <div class="fix-note">Select Clean Read or Verbatim, paste your transcript, and click <strong>Run Full 11-Point Audit</strong>.</div>
+        </div>`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
   </script>
 </body>
-        </html>
-  
+</html>
